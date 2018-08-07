@@ -3,10 +3,10 @@ var staticCacheName = 'restaurant-static-v1';
 let filesToCache = [
     'index.html',
     'restaurant.html',
+    'sw.js',
     'js/dbhelper.js',
     'js/main.js',
     'js/restaurant_info.js',
-    'sw.js',
     'css/styles.css',
     'css/responsive.css',
     'data/restaurants.json',
