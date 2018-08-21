@@ -8,8 +8,7 @@ var markers = []
 /* 
 * Registers service worker
 */
-
-
+/*
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('sw.js')
@@ -21,6 +20,8 @@ if('serviceWorker' in navigator){
     });
   });
 }
+*/
+
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.

@@ -1,6 +1,11 @@
+// import idb from 'idb';
+// import function didn't work.  couldn't troubleshoot
+// instead copied idb.js to /js and linked it in index.html
+
 /**
  * Common database helper functions.
  */
+
 class DBHelper {
 
   /**
@@ -8,46 +13,64 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 8000 // Change this to your server port
-    return `http://localhost:${port}/data/restaurants.json`;
+    const port = '1337' // Change this to your server port
+    return `http://localhost:${port}/restaurants`
   }
 
-  /**
-   * Fetch all restaurants.
-   */
-  static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
-      }
-    };
-    xhr.send();
+
+  static openDatabase(){
+
+    if(!navigator.serviceWorker){
+      return Promise.resolve();
+    }
+
+    return idb.open('restaurants', 1, function(upgradeDB){
+      return upgradeDB.createObjectStore('restaurants', {keypath: 'id'});
+    }); 
   }
 
-  /**
-   * Fetch a restaurant by its ID.
-   */
-  static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
-        }
-      }
+  static fetchDataFromNetwork(){
+    return fetch(DBHelper.DATABASE_URL).then(function(response){
+      return response.json();
     });
+  }
+
+  static fillDatabase(){
+    // opens the database -- returns a promise
+    var dbPromise = DBHelper.openDatabase();
+
+    // fetches json file from the network -- returns a promise
+    var restaurants = DBHelper.fetchDataFromNetwork();
+
+    return dbPromise.then(function(db){
+      var tx = db.transaction('restaurants', 'readwrite');
+      var store = tx.objectStore('restaurants');
+      restaurants.then(function(restaurants){
+        restaurants.forEach(function(restaurant){
+          store.put(restaurant, restaurant.id);
+        });
+      });
+      return tx.complete;
+    });
+
+  }
+
+  static fetchRestaurants(){
+    var dbPromise = DBHelper.openDatabase();
+    return dbPromise.then(function(db){
+      var tx = db.transaction('restaurants');
+      var store = tx.objectStore('restaurants');
+      return store.getAll();
+    });
+  }
+
+  static fetchRestauntById(id){
+    var dbPromise = DBHelper.openDatabase();
+  return dbPromise.then(function(db){
+    var tx = db.transaction('restaurants');
+    var store = tx.objectStore('restaurants');
+    return store.get(parseInt(id));
+  });
   }
 
   /**
@@ -176,7 +199,4 @@ class DBHelper {
     );
     return marker;
   } */
-
-
 }
-
