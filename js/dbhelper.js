@@ -55,6 +55,8 @@ class DBHelper {
 
   }
 
+
+
   static fetchRestaurants(){
     var dbPromise = DBHelper.openDatabase();
     return dbPromise.then(function(db){
@@ -62,6 +64,7 @@ class DBHelper {
       var store = tx.objectStore('restaurants');
       return store.getAll();
     });
+    // can add an initialize the database once we get it to load >:C
   }
 
   static fetchRestauntById(id){
