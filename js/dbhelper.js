@@ -1,6 +1,5 @@
 //import idb from 'idb';
 
-
 /**
  * Common database helper functions.
  */
@@ -62,51 +61,15 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    /*
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
-      }
-    };
-    xhr.send();
-    */
-
-
+    DBHelper.fillDatabase();
 
     var dbPromise = DBHelper.openDatabase();
-    dbPromise().then(function(db){
-      var tx = db.transaction('restaurants');
+    dbPromise.then(function(db){
+      var tx = db.transaction('restaurants', 'readwrite');
       var store = tx.objectStore('restaurants');
       return restaurants.getAll();
-    }).then(function(restaurants){
-      // if restaurants is empty, call fetch data from network
-    /*
-    DBHelper.fetchDataFromNetwork().then(function(data){
-      //console.log(data);
-      callback(null, data);
-    }).catch(function(error){
-      return(callback(`Request failed.  Returned status of ${error}.`), null);
-    })
-*/
-
-    /* if restaurants is not empty, then return all of the restaurants 
-    not sure if i just put:
-    return restaurants;
-    OR
-    callback(null, restaurants);
-
-    i'm a little confused as to how callbacks work in this case
-    i have the general idea of callbacks as a function passed into the function
-    so that whatever the callback function is will be given the parameter restaurants
-    */
     });
+
 
 }
 
