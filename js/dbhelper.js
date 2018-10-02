@@ -67,7 +67,7 @@ class DBHelper {
     dbPromise.then(function(db){
       var tx = db.transaction('restaurants', 'readwrite');
       var store = tx.objectStore('restaurants');
-      return restaurants.getAll();
+      return store.getAll();
     });
 
 
