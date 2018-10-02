@@ -22,9 +22,11 @@
   "homepage": "https://github.com/tstickles/mws-restaurant-stage-1#readme",
   "devDependencies": {
     "gulp": "^3.9.1",
+    "gulp-babel": "^8.0.0",
     "gulp-sass": "^4.0.1"
   },
   "dependencies": {
+    "babel": "^6.23.0",
     "idb": "^2.1.3"
   }
 }

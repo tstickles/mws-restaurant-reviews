@@ -1,4 +1,13 @@
+import idb from 'idb';
+
 var staticCacheName = 'restaurant-static-v1';
+
+const dbPromise = idb.open(database, 1, function(upgradeDB){
+  switch(upgradeDb.oldversion){
+    case 0:
+      upgradeDb.createObjectStore('restaurants', {keypath: 'id'});
+  }
+});
 
 let filesToCache = [
     'index.html',
@@ -40,6 +49,10 @@ self.addEventListener('install', function(event) {
 
 
 self.addEventListener('fetch', function(event){
+  // if it's from port '1337' handle it with indexeddb
+  // return restaurants 
+
+// if it's not from 1337, keep code from stage 1
   event.respondWith(
     caches.match(event.request).then(function(response){
       // return response or fetch match from the cache

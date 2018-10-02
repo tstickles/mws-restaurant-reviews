@@ -1,11 +1,9 @@
-// import idb from 'idb';
-// import function didn't work.  couldn't troubleshoot
-// instead copied idb.js to /js and linked it in index.html
+//import idb from 'idb';
+
 
 /**
  * Common database helper functions.
  */
-
 class DBHelper {
 
   /**
@@ -13,28 +11,33 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = '1337' // Change this to your server port
-    return `http://localhost:${port}/restaurants`
+    const port = 1337 // Change this to your server port
+    return `http://localhost:${port}/restaurants`;
   }
 
-
+  // opens the database
   static openDatabase(){
-
+  
+    // commented this section out because i'm testing it without the sw for now!
+    /*
     if(!navigator.serviceWorker){
       return Promise.resolve();
     }
+    */
 
     return idb.open('restaurants', 1, function(upgradeDB){
       return upgradeDB.createObjectStore('restaurants', {keypath: 'id'});
     }); 
   }
 
+  // fetches json from the network
   static fetchDataFromNetwork(){
     return fetch(DBHelper.DATABASE_URL).then(function(response){
       return response.json();
     });
   }
 
+  // writes restaurant objects from json file into database
   static fillDatabase(){
     // opens the database -- returns a promise
     var dbPromise = DBHelper.openDatabase();
@@ -55,25 +58,75 @@ class DBHelper {
 
   }
 
+  /**
+   * Fetch all restaurants.
+   */
+  static fetchRestaurants(callback) {
+    /*
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', DBHelper.DATABASE_URL);
+    xhr.onload = () => {
+      if (xhr.status === 200) { // Got a success response from server!
+        const json = JSON.parse(xhr.responseText);
+        const restaurants = json.restaurants;
+        callback(null, restaurants);
+      } else { // Oops!. Got an error from server.
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    };
+    xhr.send();
+    */
 
 
-  static fetchRestaurants(){
+
     var dbPromise = DBHelper.openDatabase();
-    return dbPromise.then(function(db){
+    dbPromise().then(function(db){
       var tx = db.transaction('restaurants');
       var store = tx.objectStore('restaurants');
-      return store.getAll();
-    });
-    // can add an initialize the database once we get it to load >:C
-  }
+      return restaurants.getAll();
+    }).then(function(restaurants){
+      // if restaurants is empty, call fetch data from network
+    /*
+    DBHelper.fetchDataFromNetwork().then(function(data){
+      //console.log(data);
+      callback(null, data);
+    }).catch(function(error){
+      return(callback(`Request failed.  Returned status of ${error}.`), null);
+    })
+*/
 
-  static fetchRestauntById(id){
-    var dbPromise = DBHelper.openDatabase();
-  return dbPromise.then(function(db){
-    var tx = db.transaction('restaurants');
-    var store = tx.objectStore('restaurants');
-    return store.get(parseInt(id));
-  });
+    /* if restaurants is not empty, then return all of the restaurants 
+    not sure if i just put:
+    return restaurants;
+    OR
+    callback(null, restaurants);
+
+    i'm a little confused as to how callbacks work in this case
+    i have the general idea of callbacks as a function passed into the function
+    so that whatever the callback function is will be given the parameter restaurants
+    */
+    });
+
+}
+
+  /**
+   * Fetch a restaurant by its ID.
+   */
+  static fetchRestaurantById(id, callback) {
+    // fetch all restaurants with proper error handling.
+    DBHelper.fetchRestaurants((error, restaurants) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        const restaurant = restaurants.find(r => r.id == id);
+        if (restaurant) { // Got the restaurant
+          callback(null, restaurant);
+        } else { // Restaurant does not exist in the database
+          callback('Restaurant does not exist', null);
+        }
+      }
+    });
   }
 
   /**
@@ -176,7 +229,7 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+    return (`/img/${restaurant.photograph}.jpg`);
   }
 
   /**
@@ -202,4 +255,7 @@ class DBHelper {
     );
     return marker;
   } */
+
+
 }
+
