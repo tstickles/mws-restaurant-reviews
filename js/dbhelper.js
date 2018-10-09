@@ -1,4 +1,12 @@
-//import idb from 'idb';
+var idbProject = (function(){
+  'use strict';
+  if(!('indexedDB' in window)){
+    console.log('indexedDB is not supported in this broswer');
+    return;
+  }
+
+
+});
 
 /**
  * Common database helper functions.
@@ -16,13 +24,11 @@ class DBHelper {
 
   // opens the database
   static openDatabase(){
-  
-    // commented this section out because i'm testing it without the sw for now!
-    /*
+    
     if(!navigator.serviceWorker){
+      console.log("no service worker!");
       return Promise.resolve();
     }
-    */
 
     return idb.open('restaurants', 1, function(upgradeDB){
       return upgradeDB.createObjectStore('restaurants', {keypath: 'id'});
@@ -50,6 +56,7 @@ class DBHelper {
       restaurants.then(function(restaurants){
         restaurants.forEach(function(restaurant){
           store.put(restaurant, restaurant.id);
+          console.log('IndexedDB filled');
         });
       });
       return tx.complete;
@@ -64,11 +71,16 @@ class DBHelper {
     DBHelper.fillDatabase();
 
     var dbPromise = DBHelper.openDatabase();
-    dbPromise.then(function(db){
+    return dbPromise.then(function(db){
       var tx = db.transaction('restaurants', 'readwrite');
       var store = tx.objectStore('restaurants');
       return store.getAll();
-    });
+    }).then(function(restaurants){
+      callback(null, restaurants);
+    }).catch(function(error){
+      callback(error, null);
+      console.log('restaurants not retrieved and cached' + error);}
+    );
 
 
 }

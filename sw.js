@@ -1,13 +1,4 @@
-import idb from 'idb';
-
 var staticCacheName = 'restaurant-static-v1';
-
-const dbPromise = idb.open(database, 1, function(upgradeDB){
-  switch(upgradeDb.oldversion){
-    case 0:
-      upgradeDb.createObjectStore('restaurants', {keypath: 'id'});
-  }
-});
 
 let filesToCache = [
     'index.html',
@@ -18,7 +9,6 @@ let filesToCache = [
     'js/restaurant_info.js',
     'css/styles.css',
     'css/responsive.css',
-    'data/restaurants.json',
     'img/1.jpg',
     'img/2.jpg',
     'img/3.jpg',
@@ -41,32 +31,55 @@ self.addEventListener('install', function(event) {
     event.waitUntil(
         caches.open(staticCacheName)
         .then(function(cache){
-            console.log('Opened cache');
             return cache.addAll(filesToCache);
+        }).catch(function(error){
+          console.log("could not open the cache: " + error);
         })
     );
 });
 
 
 self.addEventListener('fetch', function(event){
-  // if it's from port '1337' handle it with indexeddb
-  // return restaurants 
 
-// if it's not from 1337, keep code from stage 1
+  /*
+  var urlCheck = new URL(event.request.url);
+  if(urlCheck.port === 1337){
+    console.log('hey');
+  } 
+
+  if it's trying to get restaurants
+  DBHelper.openCache().then(function(db){
+    var tx = db.transaction('restaurants', 'readonly');
+    var store = tx.objectStore('restaurants);
+    return store.getAll();
+  }).then(function(restaurants){
+
+  })
+
+  if it's trying to get a specific restaurants
+  var id = parseInt()
+  DBHelper.openCache().then(function(db){
+    var tx = db.transaction('restaurants', 'readonly);
+    var store = tx.objectStore('restaurants');
+    return store.get(id);
+  })
+  */
+
   event.respondWith(
     caches.match(event.request).then(function(response){
       // return response or fetch match from the cache
       return response || fetch(event.request).then(function(response){
+        var responseClone = response.clone();
         caches.open(staticCacheName).then(function(cache){
           // add the item to the cache!
           // clone the response so you can return it
-          cache.put(event.request, response.clone());
+          cache.put(event.request, responseClone);
         })
         return response;
       })
     })
   );
-});
+  });
 
   self.addEventListener('activate', function(event){
     event.waitUntil(
