@@ -180,9 +180,34 @@ createRestaurantHTML = (restaurant) => {
   image.alt = restaurant.alttext;
   li.append(image);
 
-  const name = document.createElement('h1');
+  const div = document.createElement("div");
+  div.className = "restaurant-text";
+  li.append(div);
+
+  const name = document.createElement('h2');
   name.innerHTML = restaurant.name;
-  li.append(name);
+  div.append(name);
+
+
+  // just get it up and running and showing text
+  // that's going to be where you start
+  // start easy!!!!
+
+  // // add favorite button and handle favorite button
+  // const isFavorite = false;
+  // const favoriteDiv = document.createElement("div");
+  // favoriteDiv.className = "favorite-icon";
+  // const favorite = document.createElement("button");
+  // favorite.innerHTML = isFavorite;
+
+  // favorite.addEventListener("click", function(){
+  //   // click changes whether or not it is favorite
+  //   if(isFavorite){
+  //     // display filled heart
+  //   } else{
+  //     // display unfilled heart
+  //   }
+  // });
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
@@ -195,9 +220,9 @@ createRestaurantHTML = (restaurant) => {
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.href = DBHelper.urlForRestaurant(restaurant);
-  li.append(more)
+  li.append(more);
 
-  return li
+  return li;
 }
 
 /**

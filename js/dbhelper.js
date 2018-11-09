@@ -67,8 +67,24 @@ class DBHelper {
   /**
    * Fetch all restaurants.
    */
-  static fetchRestaurants(callback) {
-    DBHelper.fillDatabase();
+  static fetchRestaurants(callback, id) {
+
+    let fetchURL = DBHelper.DATABASE_URL;
+    if(id){
+      fetchURL = fetchURL + "/" + id;
+    } 
+    fetch(fetchURL, {method:"GET"}).then(function(response){
+      return response.json();
+    }).then(function(restaurants){
+      if(restaurants.length){
+        console.log(restaurants.length);
+      }
+      callback(null,restaurants);
+    }).catch(function(error){
+      callback(`Request failed.  Returned ${error}`, null);
+    });
+
+    /*
 
     var dbPromise = DBHelper.openDatabase();
     return dbPromise.then(function(db){
@@ -81,6 +97,7 @@ class DBHelper {
       callback(error, null);
       console.log('restaurants not retrieved and cached' + error);}
     );
+    */
 
 
 }
