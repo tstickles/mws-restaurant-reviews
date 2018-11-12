@@ -35,9 +35,21 @@ class DBHelper {
       return Promise.resolve();
     }
 
-    return idb.open('restaurants', 1, function(upgradeDB){
-      return upgradeDB.createObjectStore('restaurants', {keypath: 'id'});
-    }); 
+    return idb.open('restaurants', 2, function(upgradeDB){
+      switch(upgradeDB){
+        case 0:
+        upgradeDB.createObjectStore();
+        case 1:
+        upgradeDB.createObjectStore('reviews', {keyPath: id}).createIndex('restaurant_id', 'restaurant_id');
+      }
+    });
+
+    // return idb.open('restaurants', 1, function(upgradeDB){
+    //   return upgradeDB.createObjectStore('restaurants', {keypath: 'id'});
+    // }); 
+
+
+
   }
 
   // fetches json from the network
@@ -223,22 +235,15 @@ class DBHelper {
 
     return fetch(`${this.API_URL}/reviews/?restaurant_id=${id}`)
     .then(function(response){
+      // TO DO: store json in idb
       return response.json();
     }).catch(function(error){
+      // TO DO: try to grab reviews from idb
       console.log(`Could not fetch reviews from the network.  ${error}`);
       return null;
     });
   
 
-    // fetch(`http:localhost:1337/reviews/?restaurant_id=${id}`).then(function(response){
-    //   if(!response.ok){
-    //     return Promise.reject('Reviews could not be fetched.');
-    //   }
-    //   return response.json();
-    // }).catch(function(error){
-    //   console.log(`Couldn't fetch reviews.  ${error}`);
-    //   return null;
-    // });
   }
 
   /**

@@ -84,10 +84,10 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
 
-  console.log(restaurant.id);
-  console.log(DBHelper.fetchReviewsById(restaurant.id));
-  // fill reviews
-  fillReviewsHTML();
+  // fills reviews from stage 3 server
+  DBHelper.fetchReviewsById(restaurant.id)
+  .then(fillReviewsHTML);
+
 }
 
 /**
@@ -142,7 +142,10 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  // date.innerHTML = review.date;
+  
+  // displays the review's creation date as a string
+  date.innerHTML = new Date(review.createdAt).toLocaleDateString();
   li.appendChild(date);
 
   const rating = document.createElement('p');
