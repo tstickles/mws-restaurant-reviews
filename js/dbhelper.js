@@ -18,8 +18,13 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 1337 // Change this to your server port
+    const port = 1337; // Change this to your server port
     return `http://localhost:${port}/restaurants`;
+  }
+
+  static get API_URL(){
+    const port = 1337;
+    return `http://localhost:${port}`;
   }
 
   // opens the database
@@ -77,7 +82,7 @@ class DBHelper {
       return response.json();
     }).then(function(restaurants){
       if(restaurants.length){
-        console.log(restaurants.length);
+        //console.log(restaurants.length);
       }
       callback(null,restaurants);
     }).catch(function(error){
@@ -210,6 +215,32 @@ class DBHelper {
     });
   }
 
+
+  /**
+   * Fetches Reviews from stage 3 server
+   */
+  static fetchReviewsById(id){
+
+    return fetch(`${this.API_URL}/reviews/?restaurant_id=${id}`)
+    .then(function(response){
+      return response.json();
+    }).catch(function(error){
+      console.log(`Could not fetch reviews from the network.  ${error}`);
+      return null;
+    });
+  
+
+    // fetch(`http:localhost:1337/reviews/?restaurant_id=${id}`).then(function(response){
+    //   if(!response.ok){
+    //     return Promise.reject('Reviews could not be fetched.');
+    //   }
+    //   return response.json();
+    // }).catch(function(error){
+    //   console.log(`Couldn't fetch reviews.  ${error}`);
+    //   return null;
+    // });
+  }
+
   /**
    * Restaurant page URL.
    */
@@ -237,16 +268,6 @@ class DBHelper {
       marker.addTo(newMap);
     return marker;
   } 
-  /* static mapMarkerForRestaurant(restaurant, map) {
-    const marker = new google.maps.Marker({
-      position: restaurant.latlng,
-      title: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant),
-      map: map,
-      animation: google.maps.Animation.DROP}
-    );
-    return marker;
-  } */
 
 
 }

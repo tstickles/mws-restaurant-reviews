@@ -27,7 +27,6 @@ let filesToCache = [
 
 /* installs service worker  */
 self.addEventListener('install', function(event) {
-    console.log("installing");
     event.waitUntil(
         caches.open(staticCacheName)
         .then(function(cache){
