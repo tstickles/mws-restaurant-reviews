@@ -9,17 +9,17 @@ var markers = []
 * Registers service worker
 */
 
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js')
-    .then(function(reg){
-      console.log('Registation succeeded.  Scope is ' + reg.scope);
+// if('serviceWorker' in navigator){
+//   window.addEventListener('load', function(){
+//     navigator.serviceWorker.register('sw.js')
+//     .then(function(reg){
+//       console.log('Registation succeeded.  Scope is ' + reg.scope);
 
-    }).catch(function(error){
-      console.log('Reigstration failed with ' + error);
-    });
-  });
-}
+//     }).catch(function(error){
+//       console.log('Reigstration failed with ' + error);
+//     });
+//   });
+// }
 
 
 /**
@@ -176,26 +176,42 @@ createRestaurantHTML = (restaurant) => {
   name.innerHTML = restaurant.name;
   div.append(name);
 
+  const button = document.createElement("button");
+  button.innerHTML = '<i class="far fa-heart"></i>';
 
-  // just get it up and running and showing text
-  // that's going to be where you start
-  // start easy!!!!
+ // button.innerHTML = "&#9829;"; // hex code for heart ♥
+  button.className = "fav-bttn"
+  button.dataset.id = restaurant.id;
+  button.setAttribute('aria-label', `Mark ${restaurant.name} as a favorite`);
+  button.setAttribute('aria-pressed', restaurant.is_favorite);
 
-  // // add favorite button and handle favorite button
-  // const isFavorite = false;
-  // const favoriteDiv = document.createElement("div");
-  // favoriteDiv.className = "favorite-icon";
-  // const favorite = document.createElement("button");
-  // favorite.innerHTML = isFavorite;
+  button.onclick = function(){
+    var el = this;
+    var fav = el.getAttribute('aria-pressed') == 'true';
+    var url = `${DBHelper.DATABASE_URL}/${el.dataset.id}/?is_favorite=${!fav}`;
+    var PUT = {method: 'PUT'};
 
-  // favorite.addEventListener("click", function(){
-  //   // click changes whether or not it is favorite
-  //   if(isFavorite){
-  //     // display filled heart
-  //   } else{
-  //     // display unfilled heart
-  //   }
-  // });
+    return fetch(url, {method: 'PUT'})
+    .then(function(response){
+    if(response.ok){
+        return response.json();
+    }
+    else{
+        return Promise.reject("Couldn't mark restaurant as favorite.")
+    }
+    }).then(function(updatedRestaurant){
+      DBHelper.storeSingleRestaurant(updatedRestaurant, true);
+      el.setAttribute('aria-pressed', !fav);
+      if(el.getAttribute('aria-pressed') == 'true'){
+        el.innerHTML = '<i class="fas fa-heart"></i>';
+      }
+      else{
+        el.innerHTML = '<i class="far fa-heart"></i>';
+      }
+    });  
+  }
+
+  div.append(button);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
@@ -212,6 +228,8 @@ createRestaurantHTML = (restaurant) => {
 
   return li;
 }
+
+
 
 /**
  * Add markers for current restaurants to the map.

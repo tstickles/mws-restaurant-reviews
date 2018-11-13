@@ -46,23 +46,51 @@ class DBHelper {
   }
 
   // writes restaurant objects from json file into database
-  static storeRestaurants(restaurants){
+  static storeRestaurants(restaurants, update = false){
     // opens the database -- returns a promise
     var dbPromise = DBHelper.openDatabase();
     
     return dbPromise.then(function(db){
       var tx = db.transaction('restaurants', 'readwrite');
       var store = tx.objectStore('restaurants');
-      restaurants.then(function(restaurants){
-        restaurants.forEach(function(restaurant){
+      restaurants.forEach(function(restaurant){
+        if(update == true){
           store.put(restaurant);
+        }
+        else{
+          var idbRestaurant = store.get(restaurant);
+          if(!idbRestaurant || idbRestaurant.updatedAt < restaurant.updatedAt){
+            store.put(restaurant);
+          }
+        }
         });
-      });
-      return tx.complete;  
+        return tx.complete;
     }).catch(function(error){
       console.log(`Unable to store restaurants.  ${error}`);
     });
+  }
 
+   // writes restaurant objects from json file into database
+   static storeSingleRestaurant(restaurant, update = false){
+    // opens the database -- returns a promise
+    var dbPromise = DBHelper.openDatabase();
+    
+    return dbPromise.then(function(db){
+      var tx = db.transaction('restaurants', 'readwrite');
+      var store = tx.objectStore('restaurants');
+      if(update == true){
+        store.put(restaurant);
+      }
+      else{
+        var idbRestaurant = store.get(restaurant);
+        if(!idbRestaurant || idbRestaurant.updatedAt < restaurant.updatedAt){
+          store.put(restaurant);
+        }
+      }
+        return tx.complete;
+    }).catch(function(error){
+      console.log(`Unable to store restaurants.  ${error}`);
+    });
   }
 
   /**
@@ -157,14 +185,18 @@ static getReviewsById(id){
       return reviews;
     }).catch(function(error){
       console.log(`Could not fetch reviews from the network.  Trying idb.  ${error}`);
-      return getReviewsById(id).then(function(reviews){
+      var dbPromise = DBHelper.openDatabase();
+      dbPromise.then(function(db){
+        var store = db.transaction('reviews').objectStore('reviews').index('id');
+        return store.getAll();
+      }).then(function(reviews){
         if(reviews.length < 1){
           return null;
         }
         else{
           return reviews;
         }
-      }); 
+      });
     });
   }
 

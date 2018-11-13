@@ -220,6 +220,33 @@ nav h1 a {
   text-decoration: underline;
 }
 
+/* ====================== Favorite Button ====================== */
+.fav-bttn{
+    padding: 10px; 
+    float: right; 
+    background: none;
+    border: none;
+    font-size: 2em;
+}
+
+/* Default button style when not toggled */
+.fav-bttn{
+  padding: 10px;
+  background: none;
+  border: none;
+  font-size: 2em;
+}
+/* Button style when button is toggled */
+.fav-bttn[aria-pressed=true] {
+  color: orange;
+}
+/* Accessible and easy to spot styles for our buttons when hovered and focused */
+.fav-bttn:hover,
+.fav-bttn:focus {
+  color: #e27004;
+
+}
+
 /* ====================== Restaurant Details ====================== */
 .inside header {
   /* position: fixed;
