@@ -1,18 +1,9 @@
-var idbProject = (function(){
-  'use strict';
-  if(!('indexedDB' in window)){
-    console.log('indexedDB is not supported in this broswer');
-    return;
-  }
-
-
-});
-
 /**
  * Common database helper functions.
  */
 class DBHelper {
 
+  
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
@@ -34,49 +25,42 @@ class DBHelper {
       console.log("no service worker!");
       return Promise.resolve();
     }
-
-    return idb.open('restaurants', 2, function(upgradeDB){
-      switch(upgradeDB){
+    
+    return idb.open('restaurant-reviews-db', 2, function(upgradeDB) {
+      switch (upgradeDB.oldVersion) {
         case 0:
-        upgradeDB.createObjectStore();
+          upgradeDB.createObjectStore('restaurants', {keyPath: 'id'});
         case 1:
-        upgradeDB.createObjectStore('reviews', {keyPath: id}).createIndex('restaurant_id', 'restaurant_id');
+          upgradeDB.createObjectStore('reviews', {keyPath: 'id', autoIncrement: true})
+          .createIndex('restaurant_id', 'restaurant_id');
       }
     });
-
-    // return idb.open('restaurants', 1, function(upgradeDB){
-    //   return upgradeDB.createObjectStore('restaurants', {keypath: 'id'});
-    // }); 
-
-
 
   }
 
   // fetches json from the network
-  static fetchDataFromNetwork(){
+  static fetchRestaurantsFromNetwork(){
     return fetch(DBHelper.DATABASE_URL).then(function(response){
       return response.json();
     });
   }
 
   // writes restaurant objects from json file into database
-  static fillDatabase(){
+  static storeRestaurants(restaurants){
     // opens the database -- returns a promise
     var dbPromise = DBHelper.openDatabase();
-
-    // fetches json file from the network -- returns a promise
-    var restaurants = DBHelper.fetchDataFromNetwork();
-
+    
     return dbPromise.then(function(db){
       var tx = db.transaction('restaurants', 'readwrite');
       var store = tx.objectStore('restaurants');
       restaurants.then(function(restaurants){
         restaurants.forEach(function(restaurant){
-          store.put(restaurant, restaurant.id);
-          console.log('IndexedDB filled');
+          store.put(restaurant);
         });
       });
-      return tx.complete;
+      return tx.complete;  
+    }).catch(function(error){
+      console.log(`Unable to store restaurants.  ${error}`);
     });
 
   }
@@ -85,37 +69,31 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback, id) {
-
-    let fetchURL = DBHelper.DATABASE_URL;
-    if(id){
-      fetchURL = fetchURL + "/" + id;
-    } 
-    fetch(fetchURL, {method:"GET"}).then(function(response){
-      return response.json();
-    }).then(function(restaurants){
-      if(restaurants.length){
-        //console.log(restaurants.length);
-      }
-      callback(null,restaurants);
-    }).catch(function(error){
-      callback(`Request failed.  Returned ${error}`, null);
-    });
-
-    /*
-
     var dbPromise = DBHelper.openDatabase();
-    return dbPromise.then(function(db){
-      var tx = db.transaction('restaurants', 'readwrite');
-      var store = tx.objectStore('restaurants');
-      return store.getAll();
+    var store;
+    dbPromise.then(function(db){
+      store = db.transaction('restaurants', 'readwrite').objectStore('restaurants');
+      return store.count();
+      }
+    ).then(function(count){
+      if(id){
+
+      }
+      else{
+        if(count > 0){
+          return store.getAll();
+         }
+         else{
+           var restaurants = DBHelper.fetchRestaurantsFromNetwork();
+           DBHelper.storeRestaurants(restaurants);
+           return restaurants;
+         }
+      }
     }).then(function(restaurants){
       callback(null, restaurants);
     }).catch(function(error){
-      callback(error, null);
-      console.log('restaurants not retrieved and cached' + error);}
-    );
-    */
-
+      console.log(`restaurants not retrived and cached.  ${error}`);
+    });
 
 }
 
@@ -123,6 +101,7 @@ class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
+
     // fetch all restaurants with proper error handling.
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
@@ -135,6 +114,57 @@ class DBHelper {
           callback('Restaurant does not exist', null);
         }
       }
+    });
+  }
+
+/**
+ *  Puts reviews in idb
+ */
+static storeReviews(reviews){
+  var dbPromise = DBHelper.openDatabase();
+  return dbPromise.then(function(db){
+    var tx = db.transaction('reviews', 'readwrite');
+    var store = tx.objectStore('reviews');
+    reviews.forEach(function(review){
+      store.put(review);
+    });
+    return tx.complete;
+  });
+}
+
+/**
+ * Get reviews for restaurant (based on restaurant id)
+ */
+static getReviewsById(id){
+  var dbPromise = DBHelper.openDatabase();
+  dbPromise.then(function(db){
+    var store = db.transaction('reviews').objectStore('reviews').index('id');
+    return store.getAll();
+  });
+}
+
+
+  /**
+   * Fetches Reviews from stage 3 server
+   */
+  static fetchReviewsByRestaurantId(id){
+
+    return fetch(`${this.API_URL}/reviews/?restaurant_id=${id}`)
+    .then(function(response){
+      return response.json();
+    }).then(function(reviews){
+      DBHelper.storeReviews(reviews);
+      return reviews;
+    }).catch(function(error){
+      console.log(`Could not fetch reviews from the network.  Trying idb.  ${error}`);
+      return getReviewsById(id).then(function(reviews){
+        if(reviews.length < 1){
+          return null;
+        }
+        else{
+          return reviews;
+        }
+      }); 
     });
   }
 
@@ -227,24 +257,6 @@ class DBHelper {
     });
   }
 
-
-  /**
-   * Fetches Reviews from stage 3 server
-   */
-  static fetchReviewsById(id){
-
-    return fetch(`${this.API_URL}/reviews/?restaurant_id=${id}`)
-    .then(function(response){
-      // TO DO: store json in idb
-      return response.json();
-    }).catch(function(error){
-      // TO DO: try to grab reviews from idb
-      console.log(`Could not fetch reviews from the network.  ${error}`);
-      return null;
-    });
-  
-
-  }
 
   /**
    * Restaurant page URL.

@@ -9,17 +9,17 @@ var markers = []
 * Registers service worker
 */
 
-// if('serviceWorker' in navigator){
-//   window.addEventListener('load', function(){
-//     navigator.serviceWorker.register('sw.js')
-//     .then(function(reg){
-//       console.log('Registation succeeded.  Scope is ' + reg.scope);
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js')
+    .then(function(reg){
+      console.log('Registation succeeded.  Scope is ' + reg.scope);
 
-//     }).catch(function(error){
-//       console.log('Reigstration failed with ' + error);
-//     });
-//   });
-// }
+    }).catch(function(error){
+      console.log('Reigstration failed with ' + error);
+    });
+  });
+}
 
 
 /**

@@ -85,7 +85,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
 
   // fills reviews from stage 3 server
-  DBHelper.fetchReviewsById(restaurant.id)
+  DBHelper.fetchReviewsByRestaurantId(restaurant.id)
   .then(fillReviewsHTML);
 
 }
