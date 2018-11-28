@@ -1,0 +1,38 @@
+#review-entry{
+    padding: 20px 30px 100px;
+    overflow: auto;
+}
+
+textarea{
+    width: 50%;
+    height: 150px;
+    display: block;
+    max-width: 500px;
+}
+
+
+#review-entry div{
+    margin: 3px;
+}
+
+.error-msg{
+    display: none;
+    color: #d1085f;
+}
+
+@media screen and (max-width: 800px){
+    textarea{
+        width: 90%;
+        max-width: 500px;
+    }
+
+    #reviewRating{
+        height: 40px;
+        width: 40px;
+    }
+
+    #bttnSubmitReview{
+        height: 40px;
+    }
+
+}

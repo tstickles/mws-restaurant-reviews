@@ -224,10 +224,10 @@ nav h1 a {
 .fav-bttn{
     padding: 10px; 
     float: right; 
-    background: none;
     border: none;
     font-size: 2em;
 }
+
 
 /* Default button style when not toggled */
 .fav-bttn{
@@ -237,8 +237,16 @@ nav h1 a {
   font-size: 2em;
 }
 /* Button style when button is toggled */
-.fav-bttn[aria-pressed=true] {
-  color: orange;
+/* .fav-bttn[aria-pressed=true] img{
+  width: 20%;
+} */
+
+.fav-bttn img{
+  max-width: 30%;
+}
+
+.fav-bttn{
+  max-width: 200px;
 }
 /* Accessible and easy to spot styles for our buttons when hovered and focused */
 .fav-bttn:hover,

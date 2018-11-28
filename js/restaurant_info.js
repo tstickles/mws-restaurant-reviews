@@ -119,6 +119,10 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   title.innerHTML = 'Reviews';
   container.appendChild(title);
 
+  const addReviewLink = document.getElementById('add-review');
+  addReviewLink.href = DBHelper.urlForAddReview(self.restaurant);
+
+
   if (!reviews) {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';

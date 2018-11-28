@@ -176,43 +176,6 @@ createRestaurantHTML = (restaurant) => {
   name.innerHTML = restaurant.name;
   div.append(name);
 
-  const button = document.createElement("button");
-  button.innerHTML = '<i class="far fa-heart"></i>';
-
- // button.innerHTML = "&#9829;"; // hex code for heart ♥
-  button.className = "fav-bttn"
-  button.dataset.id = restaurant.id;
-  button.setAttribute('aria-label', `Mark ${restaurant.name} as a favorite`);
-  button.setAttribute('aria-pressed', restaurant.is_favorite);
-
-  button.onclick = function(){
-    var el = this;
-    var fav = el.getAttribute('aria-pressed') == 'true';
-    var url = `${DBHelper.DATABASE_URL}/${el.dataset.id}/?is_favorite=${!fav}`;
-    var PUT = {method: 'PUT'};
-
-    return fetch(url, {method: 'PUT'})
-    .then(function(response){
-    if(response.ok){
-        return response.json();
-    }
-    else{
-        return Promise.reject("Couldn't mark restaurant as favorite.")
-    }
-    }).then(function(updatedRestaurant){
-      DBHelper.storeSingleRestaurant(updatedRestaurant, true);
-      el.setAttribute('aria-pressed', !fav);
-      if(el.getAttribute('aria-pressed') == 'true'){
-        el.innerHTML = '<i class="fas fa-heart"></i>';
-      }
-      else{
-        el.innerHTML = '<i class="far fa-heart"></i>';
-      }
-    });  
-  }
-
-  div.append(button);
-
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
@@ -226,7 +189,55 @@ createRestaurantHTML = (restaurant) => {
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more);
 
+
+  const button = document.createElement("button");
+
+  button.className = "fav-bttn"
+  button.dataset.id = restaurant.id;
+  button.setAttribute('aria-pressed', restaurant.is_favorite);
+  if(restaurant.is_favorite){
+    button.innerHTML = '♥';
+    button.setAttribute('aria-label', `Unselect ${restaurant.name} as a favorite`);
+  }
+  else{
+    button.innerHTML = '♡'
+    button.setAttribute('aria-label', `Mark ${restaurant.name} as a favorite`);
+  }
+
+
+  button.onclick = function(){
+    var el = this;
+    var fav = el.getAttribute('aria-pressed') == 'true';
+    var url = `${DBHelper.DATABASE_URL}/${el.dataset.id}/?is_favorite=${!fav}`;
+    var PUT = {method: 'PUT'};
+    restaurant.is_favorite = !fav;
+    
+    DBHelper.handleFavorite(restaurant);
+    
+    var serverUpdate = fetch(url, {method: 'PUT'});
+
+    serverUpdate.then(function(response){
+      console.log("it's chillax");
+    }).catch(function(error){
+      console.log("couldn't update favorite in the server");
+    })
+
+    el.setAttribute('aria-pressed', !fav);
+    if(restaurant.is_favorite){
+      el.innerHTML = '♥';
+      button.setAttribute('aria-label', `Unselect ${restaurant.name} as a favorite`);
+    }
+    else{
+      el.innerHTML = '♡';
+      button.setAttribute('aria-label', `Mark ${restaurant.name} as a favorite`);
+    }
+  }
+
+  li.append(button);
+
   return li;
+
+  
 }
 
 
