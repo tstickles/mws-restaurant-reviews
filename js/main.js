@@ -9,17 +9,17 @@ var markers = []
 * Registers service worker
 */
 
-// if('serviceWorker' in navigator){
-//   window.addEventListener('load', function(){
-//     navigator.serviceWorker.register('sw.js')
-//     .then(function(reg){
-//       console.log('Registation succeeded.  Scope is ' + reg.scope);
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js')
+    .then(function(reg){
+      console.log('Registation succeeded.  Scope is ' + reg.scope);
 
-//     }).catch(function(error){
-//       console.log('Reigstration failed with ' + error);
-//     });
-//   });
-// }
+    }).catch(function(error){
+      console.log('Reigstration failed with ' + error);
+    });
+  });
+}
 
 
 /**
@@ -212,15 +212,8 @@ createRestaurantHTML = (restaurant) => {
     var PUT = {method: 'PUT'};
     restaurant.is_favorite = !fav;
     
-    DBHelper.handleFavorite(restaurant);
+    DBHelper.handleFavorite(restaurant, url, {method: 'PUT'});
     
-    var serverUpdate = fetch(url, {method: 'PUT'});
-
-    serverUpdate.then(function(response){
-      console.log("it's chillax");
-    }).catch(function(error){
-      console.log("couldn't update favorite in the server");
-    })
 
     el.setAttribute('aria-pressed', !fav);
     if(restaurant.is_favorite){

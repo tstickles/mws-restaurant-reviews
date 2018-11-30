@@ -26,16 +26,16 @@ let filesToCache = [
 // https://developers.google.com/web/fundamentals/primers/service-workers/
 
 /* installs service worker  */
-// self.addEventListener('install', function(event) {
-//     event.waitUntil(
-//         caches.open(staticCacheName)
-//         .then(function(cache){
-//             return cache.addAll(filesToCache);
-//         }).catch(function(error){
-//           console.log("could not open the cache: " + error);
-//         })
-//     );
-// });
+self.addEventListener('install', function(event) {
+    event.waitUntil(
+        caches.open(staticCacheName)
+        .then(function(cache){
+            return cache.addAll(filesToCache);
+        }).catch(function(error){
+          console.log("could not open the cache: " + error);
+        })
+    );
+});
 
 
 self.addEventListener('fetch', function(event){

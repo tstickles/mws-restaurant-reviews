@@ -92,13 +92,13 @@ const submitReview = function(){
 
     // only makes changes if all form areas are complete
     if(complete){
-        DBHelper.saveNewReview(self.restaurant.id, name, rating, reviewComment);
+      DBHelper.saveNewReview(self.restaurant.id, name, rating, reviewComment);
         
     }
 
     // unblocks the submit button
     const bttn = document.getElementById("bttnSubmitReview");
-    bttn.onclick = submitReview();
+    bttn.onclick = submitReview;
 }
 
 /**

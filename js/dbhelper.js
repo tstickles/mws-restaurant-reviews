@@ -86,21 +86,96 @@ class DBHelper {
       })
     });
     }
+
+
+  /**
+  * Creates response body for new review
+   */
+  static saveNewReview(id, reviewName, reviewRating, reviewComment){
+    // blocks submit button.  prevents user from submitting same review multiple times
+    const bttn = document.getElementById("bttnSubmitReview");
+    bttn.onclick = null;
+    var url = `${DBHelper.API_URL}/reviews`;
+    //creates the POST body
+    const body = {
+      restaurant_id: id,
+      name: reviewName,
+      rating: reviewRating,
+      comments: reviewComment,
+      createdAt: Date.now()
+    }
+    DBHelper.addPending(url, {method: 'POST'}, body);
+  }
     
 
 
-static handleFavorite(updatedRestaraunt, url, method){
+static handleFavorite(restaurant, url, method){
   var dbPromise = DBHelper.openDatabase();
   // updates favorite status in restaurants
   dbPromise.then(function(db){
     var tx = db.transaction('restaurants', 'readwrite');
     var store = tx.objectStore('restaurants');
-    store.put(updatedRestaurant);
+    store.put(restaurant);
   });
 
-  // tries to POST the updated status
-  // if it fails, adds it to the pending queue
+  DBHelper.addPending(url, method, restaurant);
 }
+
+/**
+Puts the data into the pending idb
+Then calls helper method to POST data to the server
+ */ 
+
+static addPending(url, method, body){
+  var dbPromise = DBHelper.openDatabase();
+  var data = {url, method, body};
+  dbPromise.then(function(db){
+    var tx = db.transaction('pending', 'readwrite');
+    var store = tx.objectStore('pending');
+    store.put(data);
+  });
+
+  DBHelper.tryPendingCommit();
+}
+
+/**
+Helper method that tries POSTing data to server
+If it can't POST, does nothing
+If it can POST, sends as many updates as it can and deletes sent entries from idb 
+ */
+static tryPendingCommit(){
+  var dbPromise = DBHelper.openDatabase();
+  var success = false;
+  dbPromise.then(function(db){
+    var tx = db.transaction('pending', 'readwrite');
+    var store = tx.objectStore('pending');
+    var cursor = store.openCursor();
+
+    cursor.then(function cursorIterate(cursor){
+      if(!cursor){
+        return;
+      }
+      var url = cursor.value.url;
+      var method = cursor.value.method;
+      var body = JSON.stringify(cursor.value.body);
+      var res;
+      fetch(url, method, body).then(function(response){
+        if(!response.ok){
+          return;
+        }
+      }).then(function(){
+        var deletetx = db.transaction('pending', 'readwrite');
+        var deletestore = deletetx.objectStore('pending');
+        var dcursor = deletestore.openCursor();
+        dcursor.then(function(cursor){
+          cursor.delete();
+          cursor.continue().then(cursorIterate);
+        });
+      });
+    });
+  });
+}
+ 
 
   /**
    * Fetch a restaurant by its ID.
@@ -146,31 +221,6 @@ static storeReviews(reviews){
       var store = db.transaction('reviews').objectStore('reviews').index('id');
       return store.getAll();
     });
-  }
-
-
-  /**
-  * Creates response body
-   */
-  static saveNewReview(id, reviewName, reviewRating, reviewComment){
-    // blocks submit button.  prevents user from submitting same review multiple times
-    const bttn = document.getElementById("bttnSubmitReview");
-    bttn.onclick = null;
-
-    //creates the POST body
-    const body = {
-      restaurant_id: id,
-      name: reviewName,
-      rating: reviewRating,
-      comments: reviewComment,
-      createdAt: Date.now()
-    }
-
-    console.log(body);
-  }
-
-  static addOfflineReview(url, method, body){
-
   }
 
 
