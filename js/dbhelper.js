@@ -1,6 +1,13 @@
 /**
  * Common database helper functions.
  */
+
+
+/* used Alexandro Perez's MWS walkthrough as a resource
+https://alexandroperez.github.io/mws-walkthrough/
+and followed the webinars
+*/
+
 class DBHelper {
   
   /**
